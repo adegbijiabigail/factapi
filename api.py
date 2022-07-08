@@ -2,6 +2,7 @@ from flask import Flask
 import sqlite3
 
 app = Flask(__name__)
+
 connection = sqlite3.connect("db/facts.db", check_same_thread=False)
 cursor = connection.cursor()
 

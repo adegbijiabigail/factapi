@@ -10,7 +10,7 @@ initially scraped ~2K posts
 '''
 connection = sqlite3.connect("db/facts.db", check_same_thread=False)
 cursor = connection.cursor()
-#cursor.execute("CREATE TABLE facts (fact TEXT)")
+cursor.execute("CREATE TABLE facts (fact TEXT)")
 
 yesterday = datetime.today()-timedelta(days=1)
 yesterday = int(time.mktime(yesterday.timetuple()))
@@ -58,9 +58,11 @@ def propgrammar(fact, case):
 
 def parse():
     print("Parsing...")
+    remove = ['TIL that', 'TIL That', 'TIL: ', "TIL - ", "TIL"]
     with open("db/facts.txt", 'r', encoding='utf-8') as readfile:
         facts = readfile.read()
     facts = facts.split("\n")
+    
     for i in range(len(facts)-1):
         fact = facts[i]
         fact.replace("&amp;", "and")
@@ -71,17 +73,10 @@ def parse():
         if fact.find("TIL how") != -1:
             continue
         fact = fact.split("|")[1]
-        if fact.find("TIL that") != -1:
-            propgrammar(fact, "TIL that")
-            continue
-        if fact.find("TIL: ") != -1 or fact.find("TIL, ") != -1:
-            propgrammar(fact, "TIL:")
-            continue
-        if fact.find("TIL - ") != -1:
-            propgrammar(fact, "TIL - ")
-            continue
-        if fact.find("TIL") != -1:
-            propgrammar(fact, "TIL")
+        for edgecase in remove:
+            if fact.find(edgecase) != -1:
+                propgrammar(fact, edgecase)
+                break
 
 if __name__ == '__main__':
     scrape_all()
