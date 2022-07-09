@@ -10,7 +10,7 @@ initially scraped ~2K posts
 '''
 connection = sqlite3.connect("db/facts.db", check_same_thread=False)
 cursor = connection.cursor()
-cursor.execute("CREATE TABLE facts (fact TEXT)")
+#cursor.execute("CREATE TABLE facts (fact TEXT)")
 
 yesterday = datetime.today()-timedelta(days=1)
 yesterday = int(time.mktime(yesterday.timetuple()))
@@ -63,9 +63,11 @@ def parse():
         facts = readfile.read()
     facts = facts.split("\n")
     
-    for i in range(len(facts)-1):
+    for i in range(len(facts)-2):
         fact = facts[i]
         fact.replace("&amp;", "and")
+        if len(fact) == 0:
+            continue
         if fact.find("TIL about") != -1:
             continue
         if fact.find("TIL of") != -1:
