@@ -1,6 +1,6 @@
 # factapi
 <br/>
-Since knowledge is power, here's a fun fact api. This is a small project about 100 lines of code.
+Since knowledge is power, here's a fun fact api. This is a small project about 95 lines of code.
 <br>
 It works by scraping and parsing posts off of the r/todayilearned subreddit and storing them in a database for them to be randomly queried.
 <br>
@@ -19,3 +19,5 @@ To run:
 pip install requirements.txt
 <br>
 python api.py
+<br>
+(Optionally run retrieve.py to update database.)
