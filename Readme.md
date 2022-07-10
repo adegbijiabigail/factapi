@@ -19,5 +19,3 @@ To run:
 pip install requirements.txt
 <br>
 python api.py
-<br>
-(Optionally run retrieve.py to update database.)

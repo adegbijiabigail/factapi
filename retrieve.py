@@ -25,10 +25,34 @@ def get_submission_count():
     response = requests.get(api)
     return response.json()['metadata']['total_results']
 
+def canparse(fact):
+    skip = ['TIL about', 'TIL of', 'TIL how']
+    eval = True
+    if len(fact) == 0:
+        eval = False
+        return eval
+    for check in skip:
+        if fact.find(check) != -1:
+            eval = False
+            break
+    return eval
+
+def propgrammar(fact, case):
+    fact = fact[len(case):len(fact)-1]
+    fact = fact.strip()
+    fact.replace("&amp;", "and")
+    fact = fact[0].upper() + fact[1:]
+    if fact[len(fact)-1] != ".": fact += "."
+    cursor.execute("INSERT INTO facts VALUES (?);", (fact, ))
+    connection.commit()
+
 def scrape_all():
     epochs = math.ceil(get_submission_count() / 100)
     scrape_count = 0
     after = yesterday
+
+    remove = ['TIL that', 'TIL That', 'TIL: ', "TIL - ", "TIL"]
+
     for epoch in range(epochs):
         api = f"https://api.pushshift.io/reddit/submission/search/?after={after}&before={int(time.time())}&subreddit={subreddit}&limit=1000"
         response = requests.get(api)
@@ -43,45 +67,14 @@ def scrape_all():
                 if len(title) < 40:
                     continue
                 if "TIL" in title:
-                    write(f"{created}|{title}", "a")
+                    if canparse(title) == True:
+                        for edgecase in remove:
+                            if title.find(edgecase) != -1:
+                                propgrammar(title, edgecase)
+                                break
                 after = created
                 scrape_count += 1
                 print(scrape_count)
 
-def propgrammar(fact, case):
-    fact = fact[len(case):len(fact)-1]
-    fact = fact.strip()
-    fact = fact[0].upper() + fact[1:]
-    if fact[len(fact)-1] != ".": fact += "."
-    cursor.execute("INSERT INTO facts VALUES (?);", (fact, ))
-    connection.commit()
-
-def parse():
-    print("Parsing...")
-    remove = ['TIL that', 'TIL That', 'TIL: ', "TIL - ", "TIL"]
-    with open("db/facts.txt", 'r', encoding='utf-8') as readfile:
-        facts = readfile.read()
-    facts = facts.split("\n")
-    
-    for i in range(len(facts)-2):
-        fact = facts[i]
-        fact.replace("&amp;", "and")
-        if len(fact) == 0:
-            continue
-        if fact.find("TIL about") != -1:
-            continue
-        if fact.find("TIL of") != -1:
-            continue
-        if fact.find("TIL how") != -1:
-            continue
-        fact = fact.split("|")[1]
-        for edgecase in remove:
-            if fact.find(edgecase) != -1:
-                propgrammar(fact, edgecase)
-                break
-
 if __name__ == '__main__':
     scrape_all()
-    time.sleep(3)
-    parse()
-    write(" ", "w")
